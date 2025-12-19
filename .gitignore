@@ -1,0 +1,35 @@
+# --- ESP-IDF Build Artifacts (Only YOUR build outputs) ---
+/build/
+/firmware_files/build/
+sdkconfig
+sdkconfig.old
+*.elf
+*.bin
+*.map
+*.hex
+managed_components/
+dependencies.lock
+
+# --- Secrets (The Dangerous Stuff) ---
+firmware/main/certs/*.key
+firmware/main/certs/*.pem
+firmware/main/certs/*.crt
+firmware/main/certs/*
+firmware_files/main/certs/*.key
+firmware_files/main/certs/*.pem
+firmware_files/main/certs/*.crt
+
+# --- Python / ML Heavyweights ---
+__pycache__/
+*.py[cod]
+.venv/
+env/
+# Block large model files (GitHub limit is 100MB)
+*.h5
+*.model
+*.pb
+*.onnx
+
+# --- System Junk ---
+.DS_Store
+Thumbs.db

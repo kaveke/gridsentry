@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP32 Smart Meter Dashboard</title>
+<!--   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+   --><link rel="stylesheet" href="app.css">
+  <script src="jquery-3.3.1.min.js"></script>
+</head>
+<body class="bg-background text-foreground">
+  <div class="esp32-layout">
+    <!-- Header -->
+    <header class="p-4 bg-card border-b border-border">
+      <div class="container mx-auto flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fas fa-microchip text-primary text-2xl mr-3"></i>
+          <h1 class="text-xl font-bold">ESP32 Smart Meter</h1>
+        </div>
+        
+        <!-- Connection Indicator -->
+        <div id="connection-indicator" class="flex items-center">
+          <span class="connection-status offline">
+            <i class="fas fa-circle-exclamation mr-2 text-destructive"></i>
+            <span>Not Connected</span>
+          </span>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="flex-1 p-4">
+      <div class="container mx-auto max-w-5xl">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Network Connection Card -->
+          <div class="esp32-card" id="WiFiConnect">
+            <div class="card-header">
+              <i class="fas fa-wifi card-icon"></i>
+              <h2 class="card-title">Network Connection</h2>
+            </div>
+            
+            <!-- Connection Form -->
+            <div class="mb-4 space-y-3 card-content">
+              <div class="space-y-2">
+                <label for="connect_ssid" class="text-sm text-muted-foreground">
+                  WiFi SSID
+                </label>
+                <div class="relative">
+                  <span class="input-icon">
+                    <i class="fas fa-network-wired"></i>
+                  </span>
+                  <input 
+                    id="connect_ssid" 
+                    type="text" 
+                    maxLength="32" 
+                    placeholder="Enter network name" 
+                    class="esp32-input esp32-input-with-icon"
+                  />
+                </div>
+              </div>
+              
+              <div class="space-y-2">
+                <label for="connect_pass" class="text-sm text-muted-foreground">
+                  Password
+                </label>
+                <div class="relative">
+                  <span class="input-icon">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                  <input 
+                    id="connect_pass" 
+                    type="password"
+                    maxLength="64" 
+                    placeholder="Enter password" 
+                    class="esp32-input esp32-input-with-icon"
+                  />
+                </div>
+                <div class="flex items-center mt-1">
+                  <input 
+                    type="checkbox" 
+                    id="show_password" 
+                    class="mr-2 rounded bg-background border-border"
+                  />
+                  <label for="show_password" class="text-sm text-muted-foreground">
+                    Show password
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <button 
+              id="connect_Wifi" 
+              class="w-full esp32-btn esp32-btn-primary"
+            >
+              <i class="fas fa-plug mr-2"></i>
+              Connect
+            </button>
+            
+            <div id="wifi_connect_credentials_errors" class="mt-3 text-destructive text-sm"></div>
+            <div id="wifi_connect_status" class="mt-3 text-sm"></div>
+          </div>
+          
+          <!-- Connection Status Card -->
+          <div class="esp32-card">
+            <div class="card-header">
+              <i class="fas fa-signal card-icon"></i>
+              <h2 class="card-title">Connection Status</h2>
+            </div>
+            
+            <div id="connection-status-panel" class="card-content">
+              <div id="connection-diagram" class="flex items-center justify-between my-4 px-4">
+                <div class="text-center">
+                  <div class="connection-node" id="node-device">
+                    <i class="fas fa-microchip text-xs"></i>
+                  </div>
+                  <span class="connection-label">ESP32</span>
+                </div>
+                
+                <div class="flex-1 h-[2px] bg-border mx-2" id="line-wifi"></div>
+                
+                <div class="text-center">
+                  <div class="connection-node" id="node-wifi">
+                    <i class="fas fa-wifi text-xs"></i>
+                  </div>
+                  <span class="connection-label">WiFi AP</span>
+                </div>
+                
+                <div class="flex-1 h-[2px] bg-border mx-2" id="line-internet"></div>
+                
+                <div class="text-center">
+                  <div class="connection-node" id="node-internet">
+                    <i class="fas fa-globe text-xs"></i>
+                  </div>
+                  <span class="connection-label">Internet</span>
+                </div>
+              </div>
+              
+              <div id="connection-info-display" class="mt-4 space-y-2 hidden">
+                <div>
+                  <span class="text-sm font-medium">Connected to:</span>
+                  <span id="connected-ssid" class="ml-2 text-sm font-mono"></span>
+                </div>
+                <div>
+                  <span class="text-sm font-medium">IP Address:</span>
+                  <span id="connect_ip" class="ml-2 text-sm font-mono"></span>
+                </div>
+                <div>
+                  <span class="text-sm font-medium">Gateway:</span>
+                  <span id="connect_gw" class="ml-2 text-sm font-mono"></span>
+                </div>
+                <div>
+                  <span class="text-sm font-medium">Subnet Mask:</span>
+                  <span id="connect_mask" class="ml-2 text-sm font-mono"></span>
+                </div>
+                
+                <div class="pt-3">
+                  <button 
+                    id="disconnect_wifi" 
+                    class="w-full esp32-btn esp32-btn-danger"
+                  >
+                    <i class="fas fa-power-off mr-2"></i>
+                    Disconnect
+                  </button>
+                </div>
+              </div>
+              
+              <div id="not-connected-message" class="p-4 text-center">
+                <p class="text-muted-foreground">Not connected to any network</p>
+                <p class="text-xs mt-1">Use the Network Connection panel to connect</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Time Card -->
+          <div class="esp32-card">
+            <div class="card-header">
+              <i class="fas fa-clock card-icon"></i>
+              <h2 class="card-title">System Time</h2>
+            </div>
+            
+            <div class="card-content text-center py-6">
+              <div class="text-3xl font-mono" id="local_time">--:--:--</div>
+              <div class="text-xs text-muted-foreground mt-2">
+                <i class="fas fa-info-circle mr-1"></i>
+                Time synchronized via SNTP when connected to the internet
+              </div>
+            </div>
+          </div>
+          
+          <!-- Firmware Card -->
+          <div class="esp32-card">
+            <div class="card-header">
+              <i class="fas fa-code card-icon"></i>
+              <h2 class="card-title">Firmware Management</h2>
+            </div>
+            
+            <div class="card-content">
+              <div class="mb-4">
+                <span class="text-sm font-medium">Current Version:</span>
+                <span id="fw_version" class="ml-2 text-sm font-mono"></span>
+              </div>
+              
+              <div class="mt-3">
+                <div class="space-y-2 mb-4">
+                  <label for="selected_file" class="text-sm text-muted-foreground">
+                    Update Firmware
+                  </label>
+                  <input 
+                    type="file" 
+                    id="selected_file" 
+                    accept=".bin"
+                    class="hidden"
+                  />
+                  <div class="flex">
+                    <button 
+                      id="file_select" 
+                      class="esp32-btn esp32-btn-muted flex-grow"
+                    >
+                      <i class="fas fa-file-code mr-2"></i>
+                      <span>Select File</span>
+                    </button>
+                  </div>
+                  <div id="file_info" class="text-xs text-muted-foreground mt-1"></div>
+                </div>
+                
+                <div class="progress-bar mt-2 mb-2">
+                  <div class="progress-value" id="prg" style="width: 0%"></div>
+                </div>
+                
+                <button 
+                  id="upload_firmware" 
+                  class="w-full esp32-btn esp32-btn-primary mt-3"
+                  disabled
+                >
+                  <i class="fas fa-upload mr-2"></i>
+                  Update Firmware
+                </button>
+                
+                <div class="mt-3 text-sm" id="ota_update_status"></div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="p-4 text-center text-sm text-muted-foreground">
+      <p>&copy; 2023-2025 ESP32 Smart Meter Dashboard</p>
+    </footer>
+  </div>
+  
+  <!-- Status message display -->
+  <div id="status_message" class="fixed bottom-4 left-0 right-0 mx-auto text-center max-w-md px-4 py-2 rounded bg-background shadow-lg border border-border text-sm transform transition-transform duration-300 translate-y-full"></div>
+  
+  <script src="app.js"></script>
+</body>
+</html>

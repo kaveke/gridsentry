@@ -1,0 +1,27 @@
+menu "GridSentry Configuration"
+
+    config ESP_WIFI_SSID
+        string "WiFi SSID"
+        default "ESP32_AP"
+        help
+            SSID for the SoftAP.
+
+    config ESP_WIFI_PASSWORD
+        string "WiFi Password"
+        default "mysecretpassword"
+        help
+            Password for the SoftAP.
+
+    config APP_TIMEZONE
+        string "Local Timezone (TZ format)"
+        default "EAT-3"
+        help
+            Timezone in POSIX format (e.g., EST5EDT, EAT-3).
+
+    config AWS_CLIENT_ID
+        string "AWS Client ID"
+        default "ESP32_Smartmeter_001"
+        help
+            Unique Identifier for AWS IoT Core.
+
+endmenu
